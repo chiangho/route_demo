@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context 
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+		   http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<context:component-scan base-package="hao.webapp.demo"  
+		name-generator="hao.framework.core.spring.DefaultAnnotationBeanNameGenerator">
+		<context:exclude-filter type="regex" expression="hao.webapp.demo.action.*"/> 
+	</context:component-scan>
+	<bean id="configurer" class="hao.framework.core.spring.Property" lazy-init="false" >
+		<property name="locations">
+			<list>
+				<value>classpath:system.properties</value>
+			</list>
+		</property>
+	</bean>
+	<bean class="hao.framework.core.spring.SpringContext"  />
+	
+	<!-- 	配置spring redis -->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxIdle" value="${redis.maxIdle}"/>
+        <property name="maxWaitMillis" value="${redis.maxWait}"/>
+        <property name="testOnBorrow" value="${redis.testOnBorrow}"/>
+    </bean>
+
+    <bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <property name="hostName"   value="${redis.host}" />
+		<property name="port"       value="${redis.port}" />
+		<property name="password"   value="${redis.password}" />
+		<property name="poolConfig" ref="poolConfig" />
+    </bean>
+    <bean id="redisTemplete" class="org.springframework.data.redis.core.StringRedisTemplate">
+        <property name="connectionFactory" ref="connectionFactory"></property>
+    </bean>
+	<bean id="jwtTokenRedisManage" class="hao.framework.web.jwt.JwtTokenRedisManage"/>
+	
+	<!-- 账号、接口、角色实现 -->
+	<bean id="authInterface" class="hao.webapp.demo.auth.DemoAuthImpl"/>
+	
+	<import resource="spring-dao.xml" />
+</beans>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	<display-name>web-service</display-name>
+	<context-param>
+		<param-name>webAppRootKey</param-name>
+		<param-value>web-service.root</param-value>
+	</context-param>
+	<context-param>
+		<param-name>log4jConfiguration</param-name>
+		<param-value>classpath:log4j2.xml</param-value>
+	</context-param>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring-context.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<!-- 字符过滤 -->
+	<filter>
+		<filter-name>SpringCharacterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>SpringCharacterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>corsfilter</filter-name>
+		<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+		<init-param>
+			<param-name>cors.allowOrigin</param-name>
+			<param-value>*</param-value>
+		</init-param>
+		<init-param>
+			<param-name>cors.supportedMethods</param-name>
+			<param-value>GET,POST</param-value>
+		</init-param>
+		<init-param>  
+            <param-name>cors.supportedHeaders</param-name> 
+            <param-value>X-AUTH-TOKEN,Accept,Origin,X-Requested-With,Content-Type,Last-Modified</param-value> 
+        </init-param>  
+        <init-param>  
+            <param-name>cors.exposedHeaders</param-name> 
+            <param-value>Set-Cookie</param-value> 
+        </init-param>  
+        <init-param>  
+            <param-name>cors.supportsCredentials</param-name> 
+            <param-value>true</param-value> 
+        </init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>corsfilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- haoframe 过滤器 -->
+	<filter>
+		<filter-name>haoFilter</filter-name>
+		<filter-class>hao.framework.web.filter.HaoFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>haoFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+
+<!-- 	<filter> -->
+<!-- 		<filter-name>shiroFilter</filter-name> -->
+<!-- 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class> -->
+<!-- 		<init-param> -->
+<!-- 			<param-name>targetFilterLifecycle</param-name> -->
+<!-- 			<param-value>true</param-value> -->
+<!-- 		</init-param> -->
+<!-- 	</filter> -->
+<!-- 	<filter-mapping> -->
+<!-- 		<filter-name>shiroFilter</filter-name> -->
+<!-- 		<url-pattern>*.action</url-pattern> -->
+<!-- 	</filter-mapping> -->
+
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring-mvc.xml</param-value>
+		</init-param>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- 启动 -->
+	<servlet>
+		<servlet-name>StartupWeb</servlet-name>
+		<servlet-class>hao.framework.web.StartupWeb</servlet-class>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+</web-app>

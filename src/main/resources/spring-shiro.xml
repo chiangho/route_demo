@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/util 
+       http://www.springframework.org/schema/util/spring-util.xsd"
+	>
+	<description>spring shiro配置</description>
+
+<!-- 	 redis配置 --> 
+<!-- 	<bean id="redisConfig" class="hao.framework.core.redis.RedisConfig"> -->
+<!-- 		<property name="host" value="${redis.host}" /> -->
+<!-- 		<property name="port" value="${redis.port}"  /> -->
+<!-- 		<property name="password" value="${redis.password}"/> -->
+<!-- 	</bean> -->
+
+	
+	<!-- redis管理工具 -->
+<!-- 	<bean id="redisManager" class="hao.framework.core.redis.RedisManager"> -->
+<!-- 		<constructor-arg type="hao.framework.core.redis.RedisConfig" ref="redisConfig"/> -->
+<!-- 	</bean> -->
+
+	<bean id="credentialsMatcher" class="hao.framework.web.shiro.CustomCredentialsMatcher"/>
+
+	<bean id="accountAuthorizationRealm" class="hao.framework.web.shiro.AccountAuthorizationRealm">
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+		<property name="authInterface" ref="authInterface"/>
+	</bean>
+	
+	<bean id="shiroRedisSessionDAO" class="hao.framework.web.shiro.session.RedisSessionDao">
+<!--         <property name="redisManager" ref="redisManager"/> -->
+        <property name="sessionTimeout" value="${SessionTimeout}"/>
+    </bean>
+	
+	
+	<bean id="defaultWebSessionManager" class="hao.framework.web.shiro.session.ParamWebSessionManager">    
+        <property name="sessionDAO" ref="shiroRedisSessionDAO" />  
+        <property name="sessionIdName" value="sessionId"/>
+        <property name="globalSessionTimeout" value="${SessionTimeout}" />  
+        <property name="deleteInvalidSessions" value="true" />  
+        <property name="sessionValidationInterval" value="${SessionTimeout}" />  
+        <property name="sessionValidationSchedulerEnabled" value="true" />     
+    </bean>
+	
+	
+	
+<!--     <bean id="shareSession" class="org.apache.shiro.web.servlet.SimpleCookie">   -->
+<!--         <constructor-arg name="name" value="SHAREJSESSIONID" />   -->
+<!--         <property name="path" value="/" />   -->
+<!--         <property name="httpOnly" value="true"/>   -->
+<!--     </bean> -->
+	
+<!-- 	<bean id="defaultWebSessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">     -->
+<!--         <property name="sessionDAO" ref="shiroRedisSessionDAO" />   -->
+<!--         <property name="sessionIdCookie" ref="shareSession" /> -->
+<!--         <property name="globalSessionTimeout" value="${SessionTimeout}" />   -->
+<!--         <property name="deleteInvalidSessions" value="true" />   -->
+<!--         <property name="sessionValidationInterval" value="1800000" />   -->
+<!--         <property name="sessionValidationSchedulerEnabled" value="true" />      -->
+<!--     </bean> -->
+	
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="accountAuthorizationRealm"/>
+        <property name="sessionManager" ref="defaultWebSessionManager" />
+    </bean>
+	
+	<!-- 	自定义拦截器过滤和认证和角色  -->
+	<bean id="authcFilter" class="hao.framework.web.shiro.filter.AuthenticationFilter"/>  
+	<bean id="rolesFilter" class="hao.framework.web.shiro.filter.AuthorizationFilter"/>
+
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="filters">  
+            <map>  
+                <entry key="hao-authc" value-ref="authcFilter"/>  
+                <entry key="hao-roles" value-ref="rolesFilter"/>
+            </map>  
+        </property>
+		<property name="loginUrl" value="/login" />
+		<property name="unauthorizedUrl" value="/unauthorize.html"/>
+		<property name="filterChainDefinitions">
+			<value>
+				/login.action=anon
+				/sys/role/check_router.action=anon
+				/sys/setting/init_system.action=anon
+			    /**=hao-authc,hao-roles
+			</value>
+		</property>
+	</bean>
+	
+	
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+	</bean>
+</beans>
